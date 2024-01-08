@@ -28,7 +28,85 @@ def get_rolls(dices=5):
 
     return rolls
 
-if __name__ == '__main__':
+# 結果表示
+def show_dist(result_score):
+    import random
+    import collections
+    import pandas as pd
+    import numpy as np
+    import json
+    import copy
+    from matplotlib import pyplot as plt
+    from matplotlib import font_manager
+
+
+    # ********** 日本語フォントの設定 ************
+    font_path = "BIZUDPGothic-Regular.ttf" # <- どこからか入手して、作業ディレクトリに置く。
+    font_prop = font_manager.FontProperties(fname=font_path)
+    font_prop.set_style('normal')
+    font_prop.set_weight('light') 
+    font_prop.set_size('12') # 文字サイズ
+
+    # plt.rcParams["font.family"] = "BIZ UDPGothic"   # 使用するフォント
+    # plt.rcParams["font.size"] = 12                 # 文字の大きさ
+
+    bins = np.linspace(0, 330, 34)
+    scores = pd.Series(result_score)
+    freq = scores.value_counts(bins=bins, sort=False)
+    #print(freq)
+    class_value = (bins[:-1] + bins[1:]) / 2  # 階級値
+    rel_freq = freq / scores.count()  # 相対度数
+    cum_freq = freq.cumsum()  # 累積度数
+    rel_cum_freq = rel_freq.cumsum()  # 相対累積度数
+    dist = pd.DataFrame(
+        {
+            "階級値": class_value,
+            "度数": freq,
+            "相対度数": rel_freq,
+            "累積度数": cum_freq,
+            "相対累積度数": rel_cum_freq,
+        },
+        index=freq.index
+    )
+    fig, ax1 = plt.subplots()
+    fig.suptitle('スコア度数分布', fontsize=12, fontproperties=font_prop)
+    dist.plot.bar(x="階級値", y="度数", ax=ax1, width=1, ec="k", lw=1)
+    hans, labs = ax1.get_legend_handles_labels()
+    ax1.legend(handles=hans, labels=labs)
+
+    ax2 = ax1.twinx()
+    ax2.plot(np.arange(len(dist)), dist["相対累積度数"], "--o", color="k")
+    ax2.set_ylabel("累積相対度数", fontproperties=font_prop)
+    fig.savefig("dist.png")
+    #fig.show()
+    #input()
+
+def func2(player):
+    game = Game(player, autoplay=True)
+    # print(game)
+    sb = game.log.loc[12, 'scoreBoard']
+    return sb.getSum()
+
+def benchmark():
+    player = bot.PlayerAI_full_v2(fn='./trainedBots/PlayerAI_full_v2-nGame_3100.pick')
+
+    result_score = []
+    from concurrent.futures import ProcessPoolExecutor #マルチプロセス
+    from concurrent.futures import ThreadPoolExecutor #マルチスレッド
+    import time
+
+    start = time.time()
+
+    with ProcessPoolExecutor(max_workers=40) as executor:  #マルチプロセス
+    #with ThreadPoolExecutor(max_workers=40) as executor: #マルチスレッド
+        for i in range(0, 10000):
+            future = executor.submit(func2, player)    
+            result_score.append(future.result())
+
+    print (time.time()-start)
+    show_dist(result_score)
+
+def play():
     # #player = bot.PlayerAI_full_v2(fn='./trainedBots/PlayerAI_full_v2-nGame8000.pick')
     player = bot.PlayerAI_full_v2(fn='./trainedBots/PlayerAI_full_v2-nGame200.pick')
     # m, s = player.benchmark(seed=BENCHMARK_SEED)
@@ -100,4 +178,6 @@ if __name__ == '__main__':
         lp(deci2)
         lp(info2)
         print(sb)
+if __name__ == '__main__':
+    benchmark()
 

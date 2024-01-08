@@ -17,14 +17,17 @@ if __name__ == '__main__':
     m, s = player.benchmark(seed=BENCHMARK_SEED)
     print('\t{:50} {:.1f} +/- {:.1f}'.format(player.name+':', m, s))
 
-    lstPlayersAlg = []
-    lstPlayersAlg += [
-            bot.PlayerAlg_oneShot_greedy(),
-            bot.PlayerAlg_full_greedy(),
-                    ]
-    for player in lstPlayersAlg:
-        m, s = player.benchmark(seed=BENCHMARK_SEED)
-        print('\t{:50} {:.1f} +/- {:.1f}'.format(player.name+':', m, s))
+    print("player.rgrSC", player.rgrSC)
+    print("player.rgrRr", player.rgrRr)
+
+    # lstPlayersAlg = []
+    # lstPlayersAlg += [
+    #         bot.PlayerAlg_oneShot_greedy(),
+    #         bot.PlayerAlg_full_greedy(),
+    #                 ]
+    # for player in lstPlayersAlg:
+    #     m, s = player.benchmark(seed=BENCHMARK_SEED)
+    #     print('\t{:50} {:.1f} +/- {:.1f}'.format(player.name+':', m, s))
     
 
     player = bot.PlayerAI_full_v2()
@@ -42,4 +45,4 @@ if __name__ == '__main__':
         player.train(nGames=nT-player.nGames)
         m, s = player.benchmark(seed=BENCHMARK_SEED)
         print('\t{:20} {:.1f} +/- {:.1f}'.format(str(player.nGames), m, s))
-    player.save('./trainedBots/PlayerAI_full_v2-nGame8000-2.pick')
+        player.save('./trainedBots/PlayerAI_full_v2-nGame_'+str(nT)+'.pick')
